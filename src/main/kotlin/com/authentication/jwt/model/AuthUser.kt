@@ -1,5 +1,6 @@
 package com.authentication.jwt.model
 
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
@@ -19,6 +20,7 @@ data class AuthUser(
     @field:Size(min=6)
     val username:String,
     @field:Email
+    @Column(unique = true)
     val email:String,
     @field:Size(min=6)
     val password:String,
