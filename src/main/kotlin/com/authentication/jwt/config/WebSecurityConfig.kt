@@ -3,6 +3,7 @@ package com.authentication.jwt.config
 import com.authentication.jwt.service.CustomUserDetailsService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -22,18 +23,24 @@ class WebSecurityConfig(val customUserDetailsService: CustomUserDetailsService) 
 
     //control which endpoints are permitted
     override fun configure(http: HttpSecurity) {
-       http.csrf().disable().cors().disable()
-           .authorizeRequests()
-           .antMatchers("/register")
-           .permitAll()
-           .anyRequest().authenticated()
-           .and()
-           .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) //server does not
-           //have to manage the session
+        http.csrf().disable().cors().disable()
+            .authorizeRequests()
+            .antMatchers("/api/v1/register").permitAll()
+            .antMatchers("/api/v1/login").permitAll()
+            .anyRequest().authenticated()
+            .and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) //server does not
+        //have to manage the session
     }
 
     @Bean
     fun passEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
     }
+
+    @Bean
+    override fun authenticationManagerBean(): AuthenticationManager {
+        return super.authenticationManagerBean()
+    }
+
 }

@@ -17,8 +17,6 @@ data class AuthUser(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id:Long?,
-    @field:Size(min=6)
-    val username:String,
     @field:Email
     @Column(unique = true)
     val email:String,
