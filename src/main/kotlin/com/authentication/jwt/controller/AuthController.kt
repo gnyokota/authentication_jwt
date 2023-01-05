@@ -63,6 +63,7 @@ class AuthController(
                 authenticationManager.authenticate(token)
                 val userDetails = customUserDetailsService.loadUserByUsername(userReq.email)
                 val generatedToken = jwtUtil.generateToken(userDetails)
+                print("token: $generatedToken")
                 return ResponseEntity.ok(JwtResponse(generatedToken))
             }
         }

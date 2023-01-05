@@ -22,7 +22,7 @@ data class AuthUser(
     val email:String,
     @field:Size(min=6)
     val password:String,
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_to_role",
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "role_id")])

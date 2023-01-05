@@ -35,7 +35,7 @@ class JwtUtil {
     }
 
     fun extractAllClaims(token: String): Claims {
-        return Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJwt(token).body
+        return Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token).body
     }
 
     fun isTokenExpired(token: String): Boolean {
@@ -51,7 +51,7 @@ class JwtUtil {
         return Jwts.builder().setClaims(claims)
             .setSubject(subject).setIssuedAt(Date(System.currentTimeMillis()))
             .setExpiration(Date(System.currentTimeMillis() + expiration.toLong()))
-            .signWith(SignatureAlgorithm.HS256, secret).compact()
+            .signWith(SignatureAlgorithm.HS512, secret).compact()
     }
 
 }

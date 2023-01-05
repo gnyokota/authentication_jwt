@@ -6,16 +6,21 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 
 @Configuration
 @EnableWebSecurity
-class WebSecurityConfig(val customUserDetailsService: CustomUserDetailsService) : WebSecurityConfigurerAdapter() {
+class WebSecurityConfig(
+    val customUserDetailsService: CustomUserDetailsService,
+    val jwtAuthenticationFilter: JwtAuthenticationFilter
+) : WebSecurityConfigurerAdapter() {
     //control what will be the authentication mode and how it works
     override fun configure(auth: AuthenticationManagerBuilder) {
         auth.userDetailsService(customUserDetailsService)
@@ -31,6 +36,12 @@ class WebSecurityConfig(val customUserDetailsService: CustomUserDetailsService) 
             .and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) //server does not
         //have to manage the session
+
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+    }
+
+    override fun configure(web: WebSecurity) {
+        web.ignoring().antMatchers("/api/v1/login")
     }
 
     @Bean
