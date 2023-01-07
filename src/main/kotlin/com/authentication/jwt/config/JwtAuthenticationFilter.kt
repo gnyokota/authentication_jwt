@@ -52,7 +52,7 @@ class JwtAuthenticationFilter(
                     throw Exception(exc.message)
                 }
             } else {
-                loggerFactory.error("The token is invalid!")
+                loggerFactory.info("Request is coming from: ${request.pathInfo}")
             }
 
             filterChain.doFilter(request, response)

@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -94,12 +95,12 @@ class AuthController(
         return ResponseEntity.ok(roleRepo.save(newRole))
     }
 
-    @DeleteMapping("/role")
-    fun deleteRole(@RequestBody roleName: String): ResponseEntity<*> {
+    @DeleteMapping("/role/{roleName}")
+    fun deleteRole(@PathVariable roleName:String): ResponseEntity<*> {
         val roleUser = roleRepo.findByName(ERole.valueOf(roleName))
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Role with name:$roleName not found")
 
-        roleUser.id?.let { authUserRepo.deleteById(it) }
+        roleUser.id?.let { roleRepo.deleteById(it) }
         return ResponseEntity.ok("Role successfully deleted!")
     }
 

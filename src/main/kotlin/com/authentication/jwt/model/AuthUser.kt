@@ -18,9 +18,10 @@ data class AuthUser(
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id:Long?,
     @field:Email
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     val email:String,
     @field:Size(min=6)
+    @Column(nullable = false)
     val password:String,
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_to_role",
