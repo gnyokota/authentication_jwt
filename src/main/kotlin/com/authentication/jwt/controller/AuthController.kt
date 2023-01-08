@@ -3,6 +3,7 @@ package com.authentication.jwt.controller
 import com.authentication.jwt.model.AuthUser
 import com.authentication.jwt.model.AuthUserRepo
 import com.authentication.jwt.model.ERole
+import com.authentication.jwt.model.EmailRequest
 import com.authentication.jwt.model.JwtResponse
 import com.authentication.jwt.model.Role
 import com.authentication.jwt.model.RoleRepo
@@ -10,6 +11,7 @@ import com.authentication.jwt.model.RoleRequest
 import com.authentication.jwt.model.UserRequest
 import com.authentication.jwt.service.CustomUserDetailsService
 import com.authentication.jwt.utils.JwtUtil
+import javax.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -40,7 +43,7 @@ class AuthController(
     }
 
     @PostMapping("/register")
-    fun registerUser(@RequestBody userReq: UserRequest): ResponseEntity<*> {
+    fun registerUser(@Valid @RequestBody userReq: UserRequest): ResponseEntity<*> {
         val foundUser = authUserRepo.findByEmail(userReq.email)
         if (foundUser != null) {
             return ResponseEntity.badRequest().body("Email ${userReq.email} is already taken")
@@ -72,12 +75,16 @@ class AuthController(
     }
 
     @DeleteMapping("/user")
-    fun deleteUser(@RequestBody email: String): ResponseEntity<*> {
-        val foundUser = authUserRepo.findByEmail(email)
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with email:$email not found")
+    fun deleteUser(@RequestBody emailRequest: EmailRequest): ResponseEntity<*> {
+        val foundUser = authUserRepo.findByEmail(emailRequest.email)
+        if (foundUser != null) {
+            foundUser.id?.let { authUserRepo.deleteById(it) }
+            return ResponseEntity.ok("User successfully deleted!")
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("User with email:$emailRequest.email does not exist!")
+        }
 
-        foundUser.id?.let { authUserRepo.deleteById(it) }
-        return ResponseEntity.ok("User successfully deleted!")
     }
 
     @GetMapping("/role")
@@ -96,7 +103,7 @@ class AuthController(
     }
 
     @DeleteMapping("/role/{roleName}")
-    fun deleteRole(@PathVariable roleName:String): ResponseEntity<*> {
+    fun deleteRole(@PathVariable roleName: String): ResponseEntity<*> {
         val roleUser = roleRepo.findByName(ERole.valueOf(roleName))
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Role with name:$roleName not found")
 
@@ -104,7 +111,19 @@ class AuthController(
         return ResponseEntity.ok("Role successfully deleted!")
     }
 
-    private fun matchPassword( loginPass: String, storedPass: String): Boolean {
+    private fun matchPassword(loginPass: String, storedPass: String): Boolean {
         return passwordEncoder.matches(loginPass, storedPass)
+    }
+
+    @PostMapping("/user/role")
+    fun saveRole(@RequestParam email: String, @RequestParam roleName: String): ResponseEntity<*> {
+        val foundUser = authUserRepo.findByEmail(email)
+        val foundRole = roleRepo.findByName(ERole.valueOf(roleName.toUpperCase()))
+        if (foundUser != null && foundRole != null) {
+            foundUser.roles.add(foundRole)
+            return ResponseEntity.badRequest().body(authUserRepo.save(foundUser))
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User or role not found")
+        }
     }
 }

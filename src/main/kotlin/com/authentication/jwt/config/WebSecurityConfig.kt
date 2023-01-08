@@ -19,7 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 class WebSecurityConfig(
     val customUserDetailsService: CustomUserDetailsService,
-    val jwtAuthenticationFilter: JwtAuthenticationFilter
+    val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint
 ) : WebSecurityConfigurerAdapter() {
     //control what will be the authentication mode and how it works
     override fun configure(auth: AuthenticationManagerBuilder) {
@@ -33,6 +34,8 @@ class WebSecurityConfig(
             .antMatchers("/api/v1/register").permitAll()
             .antMatchers("/api/v1/login").permitAll()
             .anyRequest().authenticated()
+            .and()
+            .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
             .and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) //server does not
         //have to manage the session
