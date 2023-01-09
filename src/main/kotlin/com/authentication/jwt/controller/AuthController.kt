@@ -6,6 +6,7 @@ import com.authentication.jwt.model.ERole
 import com.authentication.jwt.model.EmailRequest
 import com.authentication.jwt.model.JwtResponse
 import com.authentication.jwt.model.Role
+import com.authentication.jwt.model.RoleNameRequest
 import com.authentication.jwt.model.RoleRepo
 import com.authentication.jwt.model.RoleRequest
 import com.authentication.jwt.model.UserRequest
@@ -14,12 +15,12 @@ import com.authentication.jwt.utils.JwtUtil
 import javax.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -37,6 +38,7 @@ class AuthController(
     val authenticationManager: AuthenticationManager
 ) {
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/user")
     fun getUsers(): ResponseEntity<List<AuthUser>> {
         return ResponseEntity.ok(authUserRepo.findAll())
@@ -48,7 +50,8 @@ class AuthController(
         if (foundUser != null) {
             return ResponseEntity.badRequest().body("Email ${userReq.email} is already taken")
         }
-        val roleList = mutableListOf(roleRepo.findByName(ERole.USER) as Role)
+
+        val roleList = mutableListOf(roleRepo.findByName(ERole.ROLE_USER) as Role)
         val newUser = AuthUser(
             null,
             userReq.email,
@@ -102,13 +105,14 @@ class AuthController(
         return ResponseEntity.ok(roleRepo.save(newRole))
     }
 
-    @DeleteMapping("/role/{roleName}")
-    fun deleteRole(@PathVariable roleName: String): ResponseEntity<*> {
-        val roleUser = roleRepo.findByName(ERole.valueOf(roleName))
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Role with name:$roleName not found")
+    @DeleteMapping("/role")
+    fun deleteRole(@RequestBody roleRequest: RoleNameRequest): ResponseEntity<*> {
+        val foundRole = roleRepo.findByName(ERole.valueOf(roleRequest.roleName))
+            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Role with name:${roleRequest.roleName} not found")
 
-        roleUser.id?.let { roleRepo.deleteById(it) }
-        return ResponseEntity.ok("Role successfully deleted!")
+            roleRepo.deleteById(foundRole.id!!)
+      return ResponseEntity.ok("Role successfully deleted!")
     }
 
     private fun matchPassword(loginPass: String, storedPass: String): Boolean {

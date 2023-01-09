@@ -18,7 +18,7 @@ class JwtUtil {
     @Value("\${jwt.secret}")
     private lateinit var secret: String
 
-    @Value("\${jwt.expiration}")
+    @Value("\${jwt.expiration.ms}")
     private lateinit var expiration: String
 
     fun extractUsername(token: String): String {
