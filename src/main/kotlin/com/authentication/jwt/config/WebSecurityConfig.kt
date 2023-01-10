@@ -7,7 +7,6 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -35,6 +34,8 @@ class WebSecurityConfig(
             .authorizeRequests()
             .antMatchers("/api/v1/login").permitAll()
             .antMatchers("/api/v1/register").permitAll()
+            .antMatchers("/api/v1/user").access("hasRole('ROLE_ADMIN')")
+            .antMatchers("/api/v1/role").access("hasRole('ROLE_ADMIN')")
             .anyRequest().authenticated()
             .and()
             .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
@@ -43,11 +44,6 @@ class WebSecurityConfig(
         //have to manage the session
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
-    }
-
-    override fun configure(web: WebSecurity) {
-        web.ignoring()
-            .antMatchers("/api/v1/login")
     }
 
     @Bean

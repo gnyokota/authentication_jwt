@@ -15,7 +15,6 @@ import com.authentication.jwt.utils.JwtUtil
 import javax.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -38,7 +37,6 @@ class AuthController(
     val authenticationManager: AuthenticationManager
 ) {
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/user")
     fun getUsers(): ResponseEntity<List<AuthUser>> {
         return ResponseEntity.ok(authUserRepo.findAll())
@@ -97,7 +95,7 @@ class AuthController(
 
     @PostMapping("/role")
     fun saveRole(@RequestBody roleReq: RoleRequest): ResponseEntity<*> {
-        val foundRole = roleRepo.findByName(ERole.valueOf(roleReq.name))
+        val foundRole = roleRepo.findByName(ERole.valueOf(roleReq.name.uppercase()))
         if (foundRole != null) {
             return ResponseEntity.badRequest().body("Role already exists")
         }
@@ -107,7 +105,7 @@ class AuthController(
 
     @DeleteMapping("/role")
     fun deleteRole(@RequestBody roleRequest: RoleNameRequest): ResponseEntity<*> {
-        val foundRole = roleRepo.findByName(ERole.valueOf(roleRequest.roleName))
+        val foundRole = roleRepo.findByName(ERole.valueOf(roleRequest.roleName.uppercase()))
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body("Role with name:${roleRequest.roleName} not found")
 
@@ -122,7 +120,7 @@ class AuthController(
     @PostMapping("/user/role")
     fun saveRole(@RequestParam email: String, @RequestParam roleName: String): ResponseEntity<*> {
         val foundUser = authUserRepo.findByEmail(email)
-        val foundRole = roleRepo.findByName(ERole.valueOf(roleName.toUpperCase()))
+        val foundRole = roleRepo.findByName(ERole.valueOf(roleName.uppercase()))
         if (foundUser != null && foundRole != null) {
             foundUser.roles.add(foundRole)
             return ResponseEntity.badRequest().body(authUserRepo.save(foundUser))
