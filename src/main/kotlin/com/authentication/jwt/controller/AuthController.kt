@@ -75,7 +75,7 @@ class AuthController(
         return ResponseEntity.badRequest().body("Password/Email is incorrect")
     }
 
-    @DeleteMapping("/user")
+    @DeleteMapping("/remove/user")
     fun deleteUser(@RequestBody emailRequest: EmailRequest): ResponseEntity<*> {
         val foundUser = authUserRepo.findByEmail(emailRequest.email)
         if (foundUser != null) {
@@ -103,7 +103,7 @@ class AuthController(
         return ResponseEntity.ok(roleRepo.save(newRole))
     }
 
-    @DeleteMapping("/role")
+    @DeleteMapping("/remove/role")
     fun deleteRole(@RequestBody roleRequest: RoleNameRequest): ResponseEntity<*> {
         val foundRole = roleRepo.findByName(ERole.valueOf(roleRequest.roleName.uppercase()))
             ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
